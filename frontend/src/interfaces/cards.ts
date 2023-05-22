@@ -61,6 +61,7 @@ export interface Board {
   myMana: number;
   myMaxMana: number;
   myMaxMaxMana: number;
+  myDeckSize: number;
 
   enemyHero: Card;
   enemyHeroPower: Card;
@@ -70,6 +71,7 @@ export interface Board {
   enemyMana: number;
   enemyMaxMana: number;
   enemyMaxMaxMana: number;
+  enemyDeckSize: number;
 }
 
 export function queryCard(b: Board, id: string): Card | undefined {

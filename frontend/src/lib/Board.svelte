@@ -18,7 +18,7 @@
   const turnLabel = board.myTurn ? "Pass turn" : "Enemy turn";
 
   let fullCardView: ICard | undefined = undefined;
-  let width = window.innerWidth * 0.1;
+  let width = window.innerWidth * 0.09;
   let nextAction: Action | null = null;
 
   board.myHand.forEach((card: ICard) => {
@@ -229,6 +229,13 @@
       <Heropower card={board.enemyHeroPower} width={width * 0.65} />
     </div>
 
+    <div class="my-deck">
+      {board.myDeckSize}
+    </div>
+    <div class="enemy-deck">
+      {board.enemyDeckSize}
+    </div>
+
     <div class="my-mana">
       {manaString(board.myMana, board.myMaxMana, board.myMaxMaxMana)}
     </div>
@@ -368,6 +375,33 @@
     position: absolute;
     bottom: 10%;
     left: 1%;
+  }
+
+  .my-deck {
+    position: absolute;
+    font-size: 40px;
+    text-align: center;
+    background-color: #282828;
+    border-style: solid;
+    border-width: 4px;
+    border-radius: 50%;
+    bottom: 20%;
+    right: 10%;
+    width: 50px;
+    height: 50px;
+  }
+  .enemy-deck {
+    position: absolute;
+    font-size: 40px;
+    text-align: center;
+    background-color: #282828;
+    border-style: solid;
+    border-width: 4px;
+    border-radius: 50%;
+    top: 20%;
+    right: 10%;
+    width: 50px;
+    height: 50px;
   }
 
   .full-card-view {
