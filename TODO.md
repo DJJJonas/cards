@@ -1,0 +1,26 @@
+# TODO list
+
+- [x] Add a README.md
+- [x] Add a CHANGELOG.md
+- [x] Add errors to card events
+- [x] Websocket server
+- [x] Create connection and id for player
+- [x] Error channel for player and broadcast
+- [x] Sleep when card is played without change
+- [x] Front: Add visuals to target
+- [x] Minion's life red when damaged
+- [x] Gigapin Maw doesn't destroy minions inside Gigapin
+- [X] Rework Card's CanAttack to AttacksLeft so I can 👇
+- [X] Implement Windfury
+- [X] Add enemy's heropower
+- [X] Implement Full Card View
+- [X] Implement Divine Shield
+- [X] Make the Reborn keywork build-in instead of creating the event for Reborn cards
+- [ ] Front: Enemy card count
+- [ ] Front: Player's deck size
+- [ ] Change the background color of card depending of the class
+- [ ] Implement on play event on front-end that when you play a minion the board will show green columns between the existing minions to specify the position
+- [ ] Implement Fatigue
+- [ ] With Warrior's bomb deck, implement Weapon and Hero (Doctor kabum)
+- [ ] Fix Player Win message
+- [ ] Write 'how to play' instructions on README.md 
