@@ -198,12 +198,27 @@
         <Card card={fullCardView} width={width * 2} />
       </div>
     {/if}
+
+    <div class="my-hero">
+      <Hero card={board.myHero} width={width * 1} />
+    </div>
+
     <div class="enemy-hero">
       <Hero
         card={board.enemyHero}
         width={width * 1}
         on:click={(_) => prepareAttack(board.enemyHero)}
       />
+    </div>
+
+    <div
+      class="my-heropower"
+      on:click={(_) => useHeroPower()}
+      on:keypress={(_) => useHeroPower()}
+      on:mouseenter={() => (fullCardView = board.myHeroPower)}
+      on:mouseleave={() => (fullCardView = null)}
+    >
+      <Heropower card={board.myHeroPower} width={width * 0.65} />
     </div>
 
     <div
@@ -214,9 +229,25 @@
       <Heropower card={board.enemyHeroPower} width={width * 0.65} />
     </div>
 
+    <div class="my-mana">
+      {manaString(board.myMana, board.myMaxMana, board.myMaxMaxMana)}
+    </div>
+
     <div class="enemy-mana">
       <!-- "◼️" -->
       {manaString(board.enemyMana, board.enemyMaxMana, board.enemyMaxMaxMana)}
+    </div>
+
+    <div class="minions my-minions">
+      {#each board.myMinions as minion (minion.id)}
+        <Minion
+          bind:card={minion}
+          width={width * 0.7}
+          on:click={(_) => prepareAttack(minion)}
+          on:mouseenter={() => (fullCardView = minion)}
+          on:mouseleave={() => (fullCardView = null)}
+        />
+      {/each}
     </div>
 
     <div class="minions enemy-minions">
@@ -231,48 +262,7 @@
       {/each}
     </div>
 
-    <button
-      class="turn-button"
-      on:click={(_) => endTurn()}
-      style:background-image={board.myTurn
-        ? "linear-gradient(#ffffcc, #f3e5ab)"
-        : "linear-gradient(#616151, #464231)"}
-      style:width={width * 1.2 + "px"}
-      style:font-size={width * 0.2 + "px"}
-      >{turnLabel}
-    </button>
-
-    <div class="minions your-minions">
-      {#each board.myMinions as minion (minion.id)}
-        <Minion
-          bind:card={minion}
-          width={width * 0.7}
-          on:click={(_) => prepareAttack(minion)}
-          on:mouseenter={() => (fullCardView = minion)}
-          on:mouseleave={() => (fullCardView = null)}
-        />
-      {/each}
-    </div>
-
-    <div class="your-mana">
-      {manaString(board.myMana, board.myMaxMana, board.myMaxMaxMana)}
-    </div>
-
-    <div
-      class="your-heropower"
-      on:click={(_) => useHeroPower()}
-      on:keypress={(_) => useHeroPower()}
-      on:mouseenter={() => (fullCardView = board.myHeroPower)}
-      on:mouseleave={() => (fullCardView = null)}
-    >
-      <Heropower card={board.myHeroPower} width={width * 0.65} />
-    </div>
-
-    <div class="your-hero">
-      <Hero card={board.myHero} width={width * 1} />
-    </div>
-
-    <div class="your-hand">
+    <div class="my-hand">
       {#each board.myHand as card (card.id)}
         <Card
           {card}
@@ -283,6 +273,17 @@
         />
       {/each}
     </div>
+
+    <button
+      class="turn-button"
+      on:click={(_) => endTurn()}
+      style:background-image={board.myTurn
+        ? "linear-gradient(#ffffcc, #f3e5ab)"
+        : "linear-gradient(#616151, #464231)"}
+      style:width={width * 1.2 + "px"}
+      style:font-size={width * 0.2 + "px"}
+      >{turnLabel}
+    </button>
   {/if}
 </main>
 
@@ -326,7 +327,7 @@
     justify-content: space-around;
     align-items: center;
   }
-  .your-minions {
+  .my-minions {
     position: absolute;
     display: flex;
     bottom: 31.5%;
@@ -334,20 +335,20 @@
     translate: -50%;
     transition: all 0.2s ease;
   }
-  .your-heropower {
+  .my-heropower {
     position: absolute;
     bottom: 13%;
     left: 57%;
     cursor: pointer;
   }
-  .your-hero {
+  .my-hero {
     position: absolute;
     bottom: 10%;
     left: 50%;
     translate: -50%;
     transition: all 0.2s ease;
   }
-  .your-hand {
+  .my-hand {
     position: absolute;
     display: flex;
     flex-direction: row;
@@ -359,11 +360,11 @@
     align-items: center;
     transition: all 0.2s ease;
   }
-  .your-hand:hover {
+  .my-hand:hover {
     bottom: 20%;
     height: 40%;
   }
-  .your-mana {
+  .my-mana {
     position: absolute;
     bottom: 10%;
     left: 1%;
