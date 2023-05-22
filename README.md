@@ -1,6 +1,6 @@
 # Cards
 
-![Sample screenshot]('./imgs/sample.png')
+![Sample screenshot](./imgs/sample.png)
 
 ## How to run
 
