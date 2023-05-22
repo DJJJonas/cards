@@ -19,7 +19,7 @@
     ? "box-shadow: 0 0 8px lightgreen;color:lightgreen;"
     : ""}
 >
-  <div class="mana" style:font-size={width * 0.2 + "px"}>
+  <div class="mana" style:font-size={width * 0.23 + "px"}>
     {card.mana}
   </div>
 </div>
@@ -33,6 +33,7 @@
     height: 30%;
     text-align: center;
     background-image: linear-gradient(to top, #3434d7, #3b3bd7);
+    border-radius: 40%;
   }
   .heropower {
     color: rgb(22, 2, 2);

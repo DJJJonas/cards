@@ -67,7 +67,7 @@
   <div class="text" style:font-size={width * 0.08 + "px"}>
     {@html card.text}
   </div>
-  {#if card.type !== "spell"}
+  {#if card.type !== "spell" && card.type !== "heropower"}
     <div
       class="attack"
       style:color={attackColor()}

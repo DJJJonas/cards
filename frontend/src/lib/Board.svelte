@@ -206,7 +206,11 @@
       />
     </div>
 
-    <div class="enemy-heropower">
+    <div
+      class="enemy-heropower"
+      on:mouseenter={() => (fullCardView = board.enemyHeroPower)}
+      on:mouseleave={() => (fullCardView = null)}
+    >
       <Heropower card={board.enemyHeroPower} width={width * 0.65} />
     </div>
 
@@ -258,6 +262,8 @@
       class="your-heropower"
       on:click={(_) => useHeroPower()}
       on:keypress={(_) => useHeroPower()}
+      on:mouseenter={() => (fullCardView = board.myHeroPower)}
+      on:mouseleave={() => (fullCardView = null)}
     >
       <Heropower card={board.myHeroPower} width={width * 0.65} />
     </div>
