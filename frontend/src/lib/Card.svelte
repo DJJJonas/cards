@@ -58,8 +58,8 @@
   style:box-shadow={cardShadow(card)}
   on:click={() => dispatch("click")}
   on:keypress={() => dispatch("keypress")}
-  on:mouseenter={(e) => dispatch("mouseenter")}
-  on:mouseleave={(e) => dispatch("mouseleave")}
+  on:mouseenter={() => dispatch("mouseenter")}
+  on:mouseleave={() => dispatch("mouseleave")}
 >
   <div class="mana" style:font-size={width * 0.174 + "px"}>{card.mana}</div>
   <img class="image" src={card.image} alt="card portrait" />

@@ -26,7 +26,7 @@
   });
   board.myHeroPower.playable = playable(board.myHeroPower);
 
-  function update(board: Board) {
+  function update() {
     board = board;
   }
 
@@ -56,10 +56,6 @@
       TargetId: "",
       Position: 0,
     });
-  }
-
-  function updateBoard() {
-    board = board;
   }
 
   function prepareAttack(card: ICard): void {
@@ -140,7 +136,7 @@
     let taunt = taunts(targets);
     if (taunt.length > 0) target(taunt);
     else target(targets);
-    updateBoard();
+    update();
   }
 
   function taunts(cards: ICard[]) {
@@ -151,14 +147,14 @@
     cards.forEach((c) => {
       c.targeted = true;
     });
-    updateBoard();
+    update();
   }
 
   function targetIds(ids: string[]) {
     [board.enemyHero, ...board.enemyMinions].forEach((c) => {
       if (ids.some((id) => id === c.id)) c.targeted = true;
     });
-    updateBoard();
+    update();
   }
 
   function untargetAll(): void {
@@ -171,7 +167,7 @@
       c.targeted = false;
       c.selected = false;
     });
-    updateBoard();
+    update();
   }
 
   function hasTargets(card: ICard): boolean {
@@ -207,14 +203,14 @@
       <Hero
         card={board.enemyHero}
         width={width * 1}
-        on:click={(_) => prepareAttack(board.enemyHero)}
+        on:click={() => prepareAttack(board.enemyHero)}
       />
     </div>
 
     <div
       class="my-heropower"
-      on:click={(_) => useHeroPower()}
-      on:keypress={(_) => useHeroPower()}
+      on:click={() => useHeroPower()}
+      on:keypress={() => useHeroPower()}
       on:mouseenter={() => (fullCardView = board.myHeroPower)}
       on:mouseleave={() => (fullCardView = null)}
     >
@@ -250,7 +246,7 @@
         <Minion
           bind:card={minion}
           width={width * 0.7}
-          on:click={(_) => prepareAttack(minion)}
+          on:click={() => prepareAttack(minion)}
           on:mouseenter={() => (fullCardView = minion)}
           on:mouseleave={() => (fullCardView = null)}
         />
@@ -262,7 +258,7 @@
         <Minion
           bind:card={minion}
           width={width * 0.7}
-          on:click={(_) => prepareAttack(minion)}
+          on:click={() => prepareAttack(minion)}
           on:mouseenter={() => (fullCardView = minion)}
           on:mouseleave={() => (fullCardView = null)}
         />
@@ -274,16 +270,16 @@
         <Card
           {card}
           {width}
-          on:click={(_) => playFromHand(0, card)}
-          on:mouseenter={(_) => (card.selected = true)}
-          on:mouseleave={(_) => (card.selected = false)}
+          on:click={() => playFromHand(0, card)}
+          on:mouseenter={() => (card.selected = true)}
+          on:mouseleave={() => (card.selected = false)}
         />
       {/each}
     </div>
 
     <button
       class="turn-button"
-      on:click={(_) => endTurn()}
+      on:click={() => endTurn()}
       style:background-image={board.myTurn
         ? "linear-gradient(#ffffcc, #f3e5ab)"
         : "linear-gradient(#616151, #464231)"}
