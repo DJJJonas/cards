@@ -10,6 +10,7 @@
   } from "../interfaces/cards";
   import Hero from "./Hero.svelte";
   import Heropower from "./Heropower.svelte";
+  import Weapon from "./Weapon.svelte";
 
   export let board: Board;
   export let socket: WebSocket;
@@ -174,15 +175,16 @@
     return card.targets !== null && card.targets.length > 0;
   }
 
-  function manaString(bMana: number, bMMana: number, bMMMana: number): string {
-    let mana = bMana;
-    let maxMana = bMMana - mana;
-    let maxMaxMana = bMMMana - mana + maxMana;
-    if (maxMana < 0) {
-      maxMaxMana -= Math.abs(maxMana);
-      maxMana = 0;
+  function manaString(mana: number, maxMana: number, maxMaxMana: number): string {
+    let d = 0;
+    let m = mana;
+    let mm = maxMana - mana;
+    if (mm < 0) {
+      d = maxMana - mana;
+      mm = 0;
     }
-    return "🟦".repeat(mana) + "◼️".repeat(maxMana) + "◾".repeat(maxMaxMana);
+    let mmm = maxMaxMana - mm + d;
+    return "🟦".repeat(m) + "◼️".repeat(mm) + "◾".repeat(mmm);
   }
 </script>
 
@@ -196,7 +198,7 @@
     {/if}
 
     <div class="my-hero">
-      <Hero card={board.myHero} width={width * 1} />
+      <Hero card={board.myHero} width={width * 1} on:click={() => prepareAttack(board.myHero)} />
     </div>
 
     <div class="enemy-hero">
@@ -206,6 +208,26 @@
         on:click={() => prepareAttack(board.enemyHero)}
       />
     </div>
+
+    {#if board.myWeapon}
+      <div
+        class="my-weapon"
+        on:mouseenter={() => (fullCardView = board.myWeapon)}
+        on:mouseleave={() => (fullCardView = null)}
+      >
+        <Weapon card={board.myWeapon} width={width * 0.8} />
+      </div>
+    {/if}
+
+    {#if board.enemyWeapon}
+    <div
+      class="enemy-weapon"
+      on:mouseenter={() => (fullCardView = board.enemyWeapon)}
+      on:mouseleave={() => (fullCardView = null)}
+    >
+      <Weapon card={board.enemyWeapon} width={width * 0.8} />
+    </div>
+  {/if}
 
     <div
       class="my-heropower"
@@ -343,6 +365,18 @@
     bottom: 13%;
     left: 57%;
     cursor: pointer;
+  }
+
+  .my-weapon {
+    position: absolute;
+    bottom: 10%;
+    left: 36%;
+  }
+
+  .enemy-weapon {
+    position: absolute;
+    top: 7%;
+    left: 36%;
   }
   .my-hero {
     position: absolute;

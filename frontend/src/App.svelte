@@ -1,9 +1,8 @@
 <script lang="ts">
   import Board from "./lib/Board.svelte";
-  import { queryCard, type Board as B, type Event } from "./interfaces/cards";
+  import { type Board as B, type Event } from "./interfaces/cards";
 
-  // const host = window.location.host;
-  const host = "localhost:8123"; //window.location.host;
+  const host = import.meta.env.DEV ? "localhost:8123" : window.location.host;
   const protocol = host.startsWith("localhost") ? "ws://" : "wss://";
   const gameWSUrl = protocol + host + "/ws/connect";
   const socket = new WebSocket(gameWSUrl);
@@ -67,6 +66,9 @@
         break;
       case "summon":
         log(`${e.source.name} summoned ${e.target.name}`);
+      case "secret":
+        // TODO: rewrite this after secret rework to show the secret's name
+        log(`${e.source.name} revealed a secret`);
     }
   }
 

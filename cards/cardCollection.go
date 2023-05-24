@@ -41,7 +41,7 @@ func ElvenArcher() *Card {
 		},
 		Targets: func(b *Board) []string {
 			options := []string{}
-			for _, c := range b.characters() {
+			for _, c := range b.AllCharacters() {
 				options = append(options, c.Id)
 			}
 			return options
@@ -164,7 +164,7 @@ func Voidgill() *Card {
 		Text:      "<b>Deathrattle:</b> Give all Murlocs in your hand +1/+1.",
 		Image:     "https://static.wikia.nocookie.net/hearthstone_gamepedia/images/e/e3/Voidgill_full.jpg",
 		Tribe:     Murloc,
-		Tags:      []string{Minion, Warlock},
+		Tags:      []string{Minion, Warlock, Deathrattle},
 		Events: map[string]Event{
 			EventDeathrattle: func(ctx *EventContext) error {
 				for _, c := range ctx.Target.Player.Hand {
@@ -289,7 +289,7 @@ func Gigafin() *Card {
 		Text:      "<b>Colossal +1. Battlecry:</b> Devour all enemy minions. <b>Deathrattle:</b> Spit them back out.",
 		Image:     "https://static.wikia.nocookie.net/hearthstone_gamepedia/images/2/26/Gigafin_full.jpg",
 		Tribe:     Murloc,
-		Tags:      []string{Minion, Warlock},
+		Tags:      []string{Minion, Warlock, Deathrattle},
 		Events: map[string]Event{
 			EventBattlecry: func(ctx *EventContext) error {
 				p := ctx.Source.Player
@@ -370,9 +370,9 @@ func Crabrider() *Card {
 		Id:        uuid.NewString(),
 		Mana:      2,
 		Name:      "Crabrider",
-		Attack:    2,
-		Health:    2,
-		MaxHealth: 2,
+		Attack:    1,
+		Health:    4,
+		MaxHealth: 4,
 		Text:      "<b>Rush. Windfury.</b>",
 		Rarity:    Common,
 		Image:     "https://static.wikia.nocookie.net/hearthstone_gamepedia/images/5/59/Crabrider_full.jpg",
@@ -593,8 +593,8 @@ func AldorPeacekeeper() *Card {
 		Mana:      3,
 		Name:      "Aldor Peacekeeper",
 		Attack:    3,
-		Health:    3,
-		MaxHealth: 3,
+		Health:    4,
+		MaxHealth: 4,
 		Rarity:    Rare,
 		Text:      "Battlecry: Change an enemy minion's Attack to 1.",
 		Image:     "https://static.wikia.nocookie.net/hearthstone_gamepedia/images/0/0a/Aldor_Peacekeeper_full.jpg",
@@ -610,8 +610,389 @@ func AldorPeacekeeper() *Card {
 			EventBattlecry: func(ctx *EventContext) error {
 				ctx.Board.EnchantCard(ctx.Target, &Enchantment{
 					Id:     ctx.This.Id,
-					Attack: -ctx.Target.Attack + 1,
+					Attack: -ctx.Target.GetAttack() + 1,
 				})
+				return nil
+			},
+		},
+	}
+}
+
+func Consecration() *Card {
+	return &Card{
+		Id:     uuid.NewString(),
+		Mana:   4,
+		Name:   "Consecration",
+		Rarity: Basic,
+		Text:   "Deal 2 damage to all enemies.",
+		Image:  "https://static.wikia.nocookie.net/hearthstone_gamepedia/images/b/b4/Consecration_full.jpg",
+		Tags:   []string{Spell, Paladin},
+		Events: map[string]Event{
+			EventSpellCast: func(ctx *EventContext) error {
+				// TODO: FIX
+				op := ctx.Board.getOpponent(ctx.This.Player)
+				ctx.Board.DealDamage(ctx.This, op.Hero, 2)
+				for _, c := range op.Minions {
+					ctx.Board.DealDamage(ctx.This, c, 2)
+				}
+				return nil
+			},
+		},
+	}
+}
+
+func DivineFavor() *Card {
+	return &Card{
+		Id:     uuid.NewString(),
+		Mana:   3,
+		Name:   "Divine Favor",
+		Rarity: Rare,
+		Text:   "Draw cards until you have as many in hand as your opponent.",
+		Image:  "https://static.wikia.nocookie.net/hearthstone_gamepedia/images/1/19/Divine_Favor_full.jpg",
+		Tags:   []string{Spell, Paladin},
+		Events: map[string]Event{
+			EventSpellCast: func(ctx *EventContext) error {
+				cardDiff := len(ctx.Board.getOpponent(ctx.This.Player).Hand) - len(ctx.This.Player.Hand)
+				for i := 0; i < cardDiff; i++ {
+					ctx.Board.DrawCard(ctx.This, ctx.This.Player, 0)
+				}
+				return nil
+			},
+		},
+	}
+}
+
+func SwordOfJustice() *Card {
+	return &Card{
+		Id:        uuid.NewString(),
+		Mana:      3,
+		Name:      "Sword of Justice",
+		Rarity:    Epic,
+		Attack:    1,
+		Health:    5,
+		MaxHealth: 5,
+		Text:      "After you summon a minion, give it +1/+1 and this loses 1 Durability.",
+		Image:     "https://static.wikia.nocookie.net/hearthstone_gamepedia/images/4/4e/Sword_of_Justice_full.jpg",
+		Tags:      []string{Weapon, Paladin},
+		Events: map[string]Event{
+			EventAfterSummon: func(ctx *EventContext) error {
+				// TODO: ONLY ALLYES
+				ctx.Target.AddEnchantment(&Enchantment{
+					Id:        ctx.This.Id,
+					Attack:    1,
+					MaxHealth: 1,
+				})
+				ctx.Board.LoseDurability(ctx.This, ctx.This, 1)
+				return nil
+			},
+		},
+	}
+}
+
+func BlessingOfKings() *Card {
+	return &Card{
+		Id:     uuid.NewString(),
+		Mana:   4,
+		Name:   "Blessing of Kings",
+		Rarity: Basic,
+		Text:   "Give a minion +4/+4. (+4 Attack/+4 Health)",
+		Image:  "https://static.wikia.nocookie.net/hearthstone_gamepedia/images/7/72/Blessing_of_Kings_full.jpg",
+		Tags:   []string{Spell, Paladin},
+		Targets: func(b *Board) []string {
+			targets := []string{}
+			for _, c := range b.AllMinionCards() {
+				targets = append(targets, c.Id)
+			}
+			return targets
+		},
+		Events: map[string]Event{
+			EventSpellCast: func(ctx *EventContext) error {
+				ctx.Board.EnchantCard(ctx.Target, &Enchantment{
+					Id:        ctx.This.Id,
+					Attack:    4,
+					MaxHealth: 4,
+				})
+				return nil
+			},
+		},
+	}
+}
+
+func KeeperOfUldaman() *Card {
+	return &Card{
+		Id:        uuid.NewString(),
+		Mana:      4,
+		Name:      "Keeper of Uldaman",
+		Rarity:    Common,
+		Attack:    3,
+		Health:    3,
+		MaxHealth: 3,
+		Text:      "<b>Battlecry:</b> Set a minion's Attack and Health to 3.",
+		Image:     "https://i.pinimg.com/originals/b9/84/2a/b9842add813d82af043d15303ecca5d9.png",
+		Tags:      []string{Minion, Paladin},
+		Targets: func(b *Board) []string {
+			targets := []string{}
+			for _, c := range b.AllMinionCards() {
+				targets = append(targets, c.Id)
+			}
+			return targets
+		},
+		Events: map[string]Event{
+			EventBattlecry: func(ctx *EventContext) error {
+				ctx.Board.EnchantCard(ctx.Target, &Enchantment{
+					Id:        ctx.This.Id,
+					Attack:    -ctx.Target.GetAttack() + 3,
+					MaxHealth: -ctx.Target.GetMaxHealth() + 3,
+				})
+				return nil
+			},
+		},
+	}
+}
+
+func StandAgainstDarkness() *Card {
+	return &Card{
+		Id:     uuid.NewString(),
+		Mana:   4,
+		Name:   "Stand Against Darkness",
+		Rarity: Common,
+		Text:   "Summon five 1/1 Silver Hand Recruits.",
+		Image:  "https://static.wikia.nocookie.net/hearthstone_gamepedia/images/f/ff/Stand_Against_Darkness_full.jpg",
+		Tags:   []string{Spell, Paladin},
+		Events: map[string]Event{
+			EventSpellCast: func(ctx *EventContext) error {
+				for i := 0; i < 5; i++ {
+					m := SilverHandRecruiter()
+					m.Player = ctx.This.Player
+					ctx.Board.SummonMinion(ctx.This, m)
+				}
+				return nil
+			},
+		},
+	}
+}
+
+func TruesilverChampion() *Card {
+	return &Card{
+		Id:        uuid.NewString(),
+		Mana:      4,
+		Name:      "Truesilver Champion",
+		Rarity:    Basic,
+		Attack:    4,
+		Health:    2,
+		MaxHealth: 2,
+		Text:      "Whenever your hero attacks, restore 3 Health to it.",
+		Image:     "https://static.wikia.nocookie.net/hearthstone_gamepedia/images/9/99/Truesilver_Champion_full.jpg",
+		Tags:      []string{Weapon, Paladin},
+		Events: map[string]Event{
+			EventAfterAttack: func(ctx *EventContext) error {
+				if ctx.Source.HasTag(Hero) {
+					ctx.Board.Heal(ctx.This, ctx.This.Player.Hero, 3)
+				}
+				return nil
+			},
+		},
+	}
+}
+
+func LayOnHands() *Card {
+	return &Card{
+		Id:     uuid.NewString(),
+		Mana:   8,
+		Name:   "Lay on Hands",
+		Rarity: Epic,
+		Text:   "Restore 8 Health. Draw 3 cards.",
+		Image:  "https://static.wikia.nocookie.net/hearthstone_gamepedia/images/b/bf/Lay_on_Hands_full.jpg",
+		Tags:   []string{Spell, Paladin},
+		Targets: func(b *Board) []string {
+			targets := []string{}
+			for _, c := range b.AllCharacters() {
+				targets = append(targets, c.Id)
+			}
+			return targets
+		},
+		Events: map[string]Event{
+			EventSpellCast: func(ctx *EventContext) error {
+				ctx.Board.Heal(ctx.This, ctx.Target, 8)
+				for i := 0; i < 3; i++ {
+					ctx.Board.DrawCard(ctx.This, ctx.This.Player, 0)
+				}
+				return nil
+			},
+		},
+	}
+}
+
+func Ashbringer() *Card {
+	return &Card{
+		Id:        uuid.NewString(),
+		Mana:      5,
+		Name:      "Ashbringer",
+		Rarity:    Epic,
+		Attack:    5,
+		Health:    3,
+		MaxHealth: 3,
+		Image:     "https://wow.gamepedia.com/media/wow.gamepedia.com/a/a6/Ashbringer_TCG.jpg",
+		Tags:      []string{Weapon, Paladin},
+	}
+}
+
+func TirionFordring() *Card {
+	return &Card{
+		Id:        uuid.NewString(),
+		Mana:      8,
+		Name:      "Tirion Fordring",
+		Attack:    6,
+		Health:    6,
+		MaxHealth: 6,
+		Rarity:    Legendary,
+		Text:      "<b>Divine Shield, Taunt Deathrattle:</b> Equip a 5/3 Ashbringer.",
+		Image:     "https://static.wikia.nocookie.net/hearthstone_gamepedia/images/6/63/Tirion_Fordring_full.jpg",
+		Tags:      []string{Minion, Paladin, DivineShield, Taunt, Deathrattle},
+		Events: map[string]Event{
+			EventDeathrattle: func(ctx *EventContext) error {
+				w := Ashbringer()
+				w.Player = ctx.This.Player
+				ctx.Board.EquipWeapon(w)
+				return nil
+			},
+		},
+	}
+}
+
+func BloodmageThalnos() *Card {
+	return &Card{
+		Id:          uuid.NewString(),
+		Mana:        2,
+		Name:        "Bloodmage Thalnos",
+		SpellDamage: 1,
+		Attack:      1,
+		Health:      1,
+		MaxHealth:   1,
+		Rarity:      Legendary,
+		Text:        "<b>Spell Damage +1. Deathrattle:</b> Draw a card.",
+		Image:       "https://static.wikia.nocookie.net/hearthstone_gamepedia/images/e/ed/Bloodmage_Thalnos_full.jpg",
+		Tags:        []string{Minion, Neutral, Spellpower, Deathrattle},
+		Events: map[string]Event{
+			EventDeathrattle: func(ctx *EventContext) error {
+				ctx.Board.DrawCard(ctx.This, ctx.This.Player, 0)
+				return nil
+			},
+		},
+	}
+}
+
+func LootHoarder() *Card {
+	return &Card{
+		Id:        uuid.NewString(),
+		Mana:      2,
+		Name:      "LootHoarder",
+		Attack:    2,
+		Health:    1,
+		MaxHealth: 1,
+		Rarity:    Common,
+		Text:      "<b>Deathrattle:</b> Draw a card.",
+		Image:     "https://static.wikia.nocookie.net/hearthstone_gamepedia/images/d/d6/Loot_Hoarder_full.jpg",
+		Tags:      []string{Minion, Neutral, Deathrattle},
+		Events: map[string]Event{
+			EventDeathrattle: func(ctx *EventContext) error {
+				ctx.Board.DrawCard(ctx.This, ctx.This.Player, 0)
+				return nil
+			},
+		},
+	}
+}
+
+func SpawnOfNZoth() *Card {
+	return &Card{
+		Id:        uuid.NewString(),
+		Mana:      3,
+		Name:      "Spawn of N'Zoth",
+		Attack:    2,
+		Health:    2,
+		MaxHealth: 2,
+		Rarity:    Common,
+		Text:      "<b>Deathrattle:</b> Give your minions +1/+1.",
+		Image:     "https://static.wikia.nocookie.net/hearthstone_gamepedia/images/7/73/Spawn_of_N%27Zoth_full.jpg",
+		Tags:      []string{Minion, Neutral, Deathrattle},
+		Events: map[string]Event{
+			EventDeathrattle: func(ctx *EventContext) error {
+				for _, m := range ctx.This.Player.Minions {
+					m.AddEnchantment(&Enchantment{
+						Id:        ctx.This.Id,
+						Name:      "Spawn of N'Zoth",
+						Attack:    1,
+						MaxHealth: 1,
+					})
+				}
+				return nil
+			},
+		},
+	}
+}
+
+func PutridSlime() *Card {
+	return &Card{
+		Id:        uuid.NewString(),
+		Mana:      1,
+		Attack:    1,
+		Health:    2,
+		MaxHealth: 2,
+		Rarity:    Basic,
+		Text:      "<b>Taunt</b>",
+		Image:     "https://gamepedia.cursecdn.com/hearthstone_gamepedia/thumb/f/fe/Slime_full.png/800px-Slime_full.png",
+		Tags:      []string{Minion, Neutral, Taunt},
+	}
+}
+
+func SludgeBelcher() *Card {
+	return &Card{
+		Id:        uuid.NewString(),
+		Mana:      5,
+		Name:      "Sludge Belcher",
+		Attack:    3,
+		Health:    5,
+		MaxHealth: 5,
+		Rarity:    Common,
+		Text:      "<b>Taunt Deathrattle:</b> Summon a 1/2 Slime with Taunt.",
+		Image:     "https://static.wikia.nocookie.net/hearthstone_gamepedia/images/0/01/Sludge_Belcher_full.jpg",
+		Tags:      []string{Minion, Neutral, Taunt, Deathrattle},
+		Events: map[string]Event{
+			EventDeathrattle: func(ctx *EventContext) error {
+				m := PutridSlime()
+				m.Player = ctx.This.Player
+				m.Health = m.MaxHealth
+				ctx.Board.SummonMinion(ctx.This, m)
+				return nil
+			},
+		},
+	}
+}
+
+func NZothTheCorruptor() *Card {
+	return &Card{
+		Id:        uuid.NewString(),
+		Mana:      10,
+		Name:      "N'Zoth, the Corruptor",
+		Attack:    5,
+		Health:    7,
+		MaxHealth: 7,
+		Rarity:    Legendary,
+		Text:      "<b>Battlecry:</b> Summon your <b>Deathrattle</b> minions that died this game.",
+		Image:     "https://static.wikia.nocookie.net/hearthstone_gamepedia/images/1/13/N%27Zoth%2C_the_Corruptor_full.jpg",
+		Tags:      []string{Minion, Neutral, Battlecry},
+		Events: map[string]Event{
+			EventBattlecry: func(ctx *EventContext) error {
+				for _, m := range ctx.This.Player.Graveyard {
+					if !m.HasTag(Deathrattle) {
+						continue
+					}
+					ress := *m
+					ressptr := &ress
+					ressptr.Enchantments = nil
+					ctx.Board.SummonMinion(ctx.This, ressptr)
+
+				}
 				return nil
 			},
 		},

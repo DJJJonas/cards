@@ -2,7 +2,7 @@ package cards
 
 import "github.com/google/uuid"
 
-func Recruiter() *Card {
+func SilverHandRecruiter() *Card {
 	return &Card{
 		Id:        uuid.NewString(),
 		Mana:      1,
@@ -26,7 +26,7 @@ func SummonRecruiter() *Card {
 		Image:  "https://static.wikia.nocookie.net/hearthstone_gamepedia/images/c/cc/Silver_Hand_Recruit_full.jpg",
 		Tags:   []string{Heropower, Paladin},
 		Events: map[string]Event{
-			EventHeroPower: SummonMinionEvent(Recruiter),
+			EventHeroPower: SummonMinionEvent(SilverHandRecruiter),
 		},
 	}
 }
@@ -52,6 +52,6 @@ func DrawCardFor2Life() *Card {
 }
 
 var HeropowerCollection = []func() *Card{
-	Recruiter,
+	SilverHandRecruiter,
 	SummonRecruiter,
 }

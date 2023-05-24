@@ -13,7 +13,7 @@ func main() {
 	b = &cards.Board{
 		PlayerTurn:        0,
 		TurnCount:         0,
-		Players:           [2]*cards.Player{cards.PaladinControlZoth(), cards.WarlockMurloc()},
+		Players:           [2]*cards.Player{cards.PaladinControlZoth(), cards.PaladinControlZoth()},
 		ActionChan:        make(chan *cards.Action),
 		WaitingActionChan: make(chan int, 1),
 		ActionEndChan:     make(chan error, 1),

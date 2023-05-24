@@ -127,7 +127,7 @@ func TranslateCard(b *cards.Board, c *cards.Card) *Card {
 		Tags:         c.Tags,
 		Tribe:        c.Tribe,
 		Sleeping:     c.Sleeping,
-		CanAttack:    c.AttacksLeft > 0 && c.GetAttack() > 0,
+		CanAttack:    c.AttacksLeft > 0 && (c.GetAttack() > 0 || c.HasTag(cards.Hero)),
 		Targets:      targets,
 		Enchantments: TranslateEnchantments(c.Enchantments),
 	}

@@ -37,6 +37,31 @@
     return shadows.join(",");
   }
 
+  function cardBGColor() {
+    switch (card.tags[1]) {
+      case "neutral":
+        return "linear-gradient(to bottom, #6C5E51, #897767)";
+      case "druid":
+        return "linear-gradient(to bottom, #5C3623, #814C31)";
+      case "hunter":
+        return "linear-gradient(to bottom, #415E25, #5A8333)";
+      case "mage":
+        return "linear-gradient(to bottom, #59648F, #737EA8)";
+      case "paladin":
+        return "linear-gradient(to bottom, #9C7D4F, #7A623E)";
+      case "priest":
+        return "linear-gradient(to bottom, #A5A7AD, #8A8D95)";
+      case "rogue":
+        return "linear-gradient(to bottom, #39393E, #515159)";
+      case "shaman":
+        return "linear-gradient(to bottom, #343F62, #465483)";
+      case "warlock":
+        return "linear-gradient(to bottom, #4E3058, #6B4279)";
+      case "warrior":
+        return "linear-gradient(to bottom, #832B20, #AC382A)";
+    }
+  }
+
   function attackColor() {
     let enchAttack = getCardAttack(card);
     if (card.attack === enchAttack) return "#E9EAE0";
@@ -56,13 +81,14 @@
   style:width={width + "px"}
   style:height={width * 1.5 + "px"}
   style:box-shadow={cardShadow(card)}
+  style:background-image={cardBGColor()}
   on:click={() => dispatch("click")}
   on:keypress={() => dispatch("keypress")}
   on:mouseenter={() => dispatch("mouseenter")}
   on:mouseleave={() => dispatch("mouseleave")}
 >
   <div class="mana" style:font-size={width * 0.174 + "px"}>{card.mana}</div>
-  <img class="image" src={card.image} alt="card portrait" />
+  <img class="image {card.type === "weapon" ? "weapon" : "normal"}" src={card.image} alt="card portrait" />
   <div class="name" style:font-size={width * 0.092 + "px"}>{card.name}</div>
   <div class="text" style:font-size={width * 0.08 + "px"}>
     {@html card.text}
@@ -79,6 +105,9 @@
       class="health"
       style:color={healthColor()}
       style:font-size={width * 0.16 + "px"}
+      style:background-image={card.type === "weapon"
+        ? "linear-gradient(#283336, #362b28)"
+        : "linear-gradient(#e7625f, #c85250)"}
     >
       {card.health}
     </div>
@@ -106,7 +135,6 @@
     text-align: center;
     text-shadow: -1px -1px 1px black, 1px -1px 1px black, -1px 1px 1px black,
       1px 1px 1px black;
-    background-color: #67595e;
     border-style: solid;
     border-width: 1px;
     border-color: #282120;
@@ -126,15 +154,24 @@
   .image {
     position: absolute;
     object-fit: cover;
-    top: -6%;
     left: 50%;
     translate: -50%;
-    width: 70%;
-    height: 62.2%;
     border-style: solid;
     border-color: #a49393;
     border-width: 4px;
     border-radius: 50%;
+  }
+
+  .normal {
+    top: -6%;
+    width: 70%;
+    height: 62.2%;
+  }
+
+  .weapon {
+    top: -2%;
+    width: 84%;
+    aspect-ratio: 1;
   }
   .name {
     position: absolute;
@@ -178,7 +215,6 @@
     position: absolute;
     top: 88%;
     left: 79%;
-    background-image: linear-gradient(#e7625f, #c85250);
     width: 20%;
     height: 13%;
     border-style: solid;

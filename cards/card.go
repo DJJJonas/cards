@@ -40,6 +40,7 @@ const (
 	// Keywords
 	Charge       = "charge"
 	Rush         = "rush"
+	Battlecry    = "battlecry"
 	Windfury     = "windfury"
 	MegaWindfury = "megaWindfury"
 	Deathrattle  = "deathrattle"
@@ -48,6 +49,7 @@ const (
 	Reborn       = "reborn"
 	DivineShield = "divineShield"
 	Secret       = "secret"
+	Spellpower   = "spellpower"
 )
 
 type Card struct {

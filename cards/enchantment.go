@@ -22,3 +22,12 @@ func (e *Enchantment) GetFormattedText() string {
 	text = strings.ReplaceAll(text, "%SpellDamage%", strconv.Itoa(e.SpellDamage))
 	return text
 }
+
+func (e *Enchantment) HasTag(tag string) bool {
+	for _, t := range e.Tags {
+		if t == tag {
+			return true
+		}
+	}
+	return false
+}

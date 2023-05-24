@@ -54,7 +54,7 @@ gameLoop:
 			}
 			b.LastEvents = []*HistoricEvent{}
 			actionEnd := b.DoAction(a, p)
-			b.TriggerEventsFrom(b.allActiveCards(), b.Context(p.Hero, p.Hero), EventEndOfAction)
+			b.TriggerEventsFrom(b.AllActiveCards(), b.Context(p.Hero, p.Hero), EventEndOfAction)
 			b.ActionEndChan <- actionEnd
 			if p, ok := b.CheckWin(); ok {
 				b.WaitingActionChan <- int(p)
@@ -86,7 +86,7 @@ func (b *Board) DoAction(a *Action, p *Player) error {
 		if card == nil {
 			return fmt.Errorf("card not found")
 		}
-		target := b.getCardByIdFrom(a.TargetId, b.characters())
+		target := b.getCardByIdFrom(a.TargetId, b.AllCharacters())
 		if card.Targets != nil {
 			validOptions := card.Targets(b)
 			if !b.targetIsValid(target.Id, validOptions) {
@@ -99,30 +99,30 @@ func (b *Board) DoAction(a *Action, p *Player) error {
 		}
 		b.AddHistoric(Play, card, target)
 	case Heropower:
-		target := b.getCardByIdFrom(a.TargetId, b.characters())
+		target := b.getCardByIdFrom(a.TargetId, b.AllCharacters())
 		err := b.UseHeroPower(p.HeroPower, target)
 		if err != nil {
 			return err
 		}
 		b.AddHistoric(Heropower, p.HeroPower, target)
 	case Attack:
-		source := b.getCardByIdFrom(a.SourceId, p.Minions)
+		source := b.getCardByIdFrom(a.SourceId, append(p.Minions, p.Hero))
 		target := b.getCardByIdFrom(a.TargetId, append(b.getOpponent(p).Minions, b.getOpponent(p).Hero))
 		if source == nil || target == nil {
 			return fmt.Errorf("card not found")
 		}
-		hasRush := source.HasTag(Rush)
-		hasCharge := source.HasTag(Charge)
-		if !hasCharge && hasRush && target.Id == b.getOpponent(p).Hero.Id && b.playedThisTurn(source) {
-			return fmt.Errorf("minions with rush can't attack heroes")
+		if source.Tags[0] == Minion {
+			err := b.MinionAttack(source, target)
+			if err != nil {
+				return err
+			}
 		}
-		if source.GetAttack() <= 0 || source.Sleeping || source.AttacksLeft == 0 {
-			return fmt.Errorf("card cannot attack")
+		if source.Tags[0] == Hero {
+			err := b.HeroAttack(source, target)
+			if err != nil {
+				return err
+			}
 		}
-		if b.OpponentHasTaunt(p) && !target.HasTag(Taunt) {
-			return fmt.Errorf("you need to attack the taunt first")
-		}
-		b.MinionAttack(source, target)
 	case EndTurn:
 		b.AddHistoric(EndTurn, p.Hero, p.Hero)
 		b.EndTurn(p)
@@ -186,45 +186,98 @@ func (b *Board) DealDamage(source, target *Card, damage int) {
 	}
 	ctx := b.Context(source, target)
 	ctx.DamageAmount = damage
-	b.TriggerEventsFrom(b.allActiveCards(), ctx, EventBeforeDamage)
+	b.TriggerEventsFrom(b.AllActiveCards(), ctx, EventBeforeDamage)
 	target.Health -= ctx.DamageAmount
 	if target.Tags[0] == Minion && target.Health <= 0 {
 		b.DestroyMinion(ctx.Source, ctx.Target)
 	}
-	b.TriggerEventsFrom(b.allActiveCards(), ctx, EventAfterDamage)
+	b.TriggerEventsFrom(b.AllActiveCards(), ctx, EventAfterDamage)
 }
 
-func (b *Board) MinionAttack(source, target *Card) {
-	if !b.cardIsActiveCard(source) || !b.cardIsActiveCard(target) ||
-		source.Health < 0 || target.Health < 0 || source.Attack <= 0 {
-		return
+func (b *Board) Heal(source, target *Card, heal int) {
+	ctx := b.Context(source, target)
+	ctx.HealAmount = heal
+	b.TriggerEventsFrom(b.AllActiveCards(), ctx, EventBeforeHeal)
+	target.Health += ctx.HealAmount
+	if target.Health >= target.MaxHealth {
+		target.Health = target.MaxHealth
+	}
+	b.TriggerEventsFrom(b.AllActiveCards(), ctx, EventAfterHeal)
+}
+
+func (b *Board) HeroAttack(source, target *Card) error {
+	if (source.GetAttack() <= 0 && (source.Player.Weapon == nil || source.Player.Weapon.GetAttack() <= 0)) || source.AttacksLeft == 0 {
+		return fmt.Errorf("your hero cannot attack")
+	}
+	if b.OpponentHasTaunt(source.Player) && !target.HasTag(Taunt) {
+		return fmt.Errorf("you need to attack the taunt first")
 	}
 	ctx := b.Context(source, target)
 	ctx.DamageAmount = source.GetAttack()
-	b.TriggerEventsFrom(b.allActiveCards(), ctx, EventBeforeAttack)
+	if source.Player.Weapon != nil {
+		ctx.DamageAmount += source.Player.Weapon.GetAttack()
+	}
+	b.TriggerEventsFrom(b.AllActiveCards(), ctx, EventBeforeAttack)
 	b.DealDamage(ctx.Source, ctx.Target, ctx.DamageAmount)
-	b.TriggerEventsFrom(b.allActiveCards(), ctx, EventAfterAttack)
+	b.TriggerEventsFrom(b.AllActiveCards(), ctx, EventAfterAttack)
+	source.AttacksLeft--
+	if target.GetAttack() > 0 {
+		ctx = b.Context(ctx.Target, ctx.Source)
+		ctx.DamageAmount = target.GetAttack()
+		b.TriggerEventsFrom(b.AllActiveCards(), ctx, EventBeforeAttack)
+		b.DealDamage(ctx.Source, ctx.Target, ctx.DamageAmount)
+		b.TriggerEventsFrom(b.AllActiveCards(), ctx, EventAfterAttack)
+	}
+	if source.Player.Weapon != nil {
+		b.LoseDurability(source.Player.Hero, source.Player.Weapon, 1)
+	}
+	return nil
+}
+
+func (b *Board) MinionAttack(source, target *Card) error {
+	hasRush := source.HasTag(Rush)
+	hasCharge := source.HasTag(Charge)
+	p := source.Player
+	if !hasCharge && hasRush && target.Id == b.getOpponent(p).Hero.Id && b.playedThisTurn(source) {
+		return fmt.Errorf("minions with rush can't attack heroes")
+	}
+	if source.GetAttack() <= 0 || source.Sleeping || source.AttacksLeft == 0 {
+		return fmt.Errorf("card cannot attack")
+	}
+	if b.OpponentHasTaunt(p) && !target.HasTag(Taunt) {
+		return fmt.Errorf("you need to attack the taunt first")
+	}
+	if !b.cardIsActiveCard(source) || !b.cardIsActiveCard(target) ||
+		source.Health < 0 || target.Health < 0 || source.Attack <= 0 {
+		return nil
+	}
+	ctx := b.Context(source, target)
+	ctx.DamageAmount = source.GetAttack()
+	b.TriggerEventsFrom(b.AllActiveCards(), ctx, EventBeforeAttack)
+	b.DealDamage(ctx.Source, ctx.Target, ctx.DamageAmount)
+	b.TriggerEventsFrom(b.AllActiveCards(), ctx, EventAfterAttack)
 	source.AttacksLeft--
 	if target.GetAttack() <= 0 {
-		return
+		return nil
 	}
 	ctx = b.Context(ctx.Target, ctx.Source)
 	ctx.DamageAmount = target.GetAttack()
-	b.TriggerEventsFrom(b.allActiveCards(), ctx, EventBeforeAttack)
+	b.TriggerEventsFrom(b.AllActiveCards(), ctx, EventBeforeAttack)
 	b.DealDamage(ctx.Source, ctx.Target, ctx.DamageAmount)
-	b.TriggerEventsFrom(b.allActiveCards(), ctx, EventAfterAttack)
+	b.TriggerEventsFrom(b.AllActiveCards(), ctx, EventAfterAttack)
+	return nil
 }
 
 // Makes the source card destroy the minion
 func (b *Board) DestroyMinion(source, minion *Card) {
 	ctx := b.Context(source, minion)
 	p := minion.Player
-	b.TriggerEventsFrom(b.allActiveCards(), ctx, EventBeforeDestroyMinion)
+	b.TriggerEventsFrom(b.AllActiveCards(), ctx, EventBeforeDestroyMinion)
 	p.Minions = b.removeCardById(ctx.Target.Id, p.Minions)
 	b.TriggerCardEvent(ctx.Target, ctx, EventDestroyMinion)
 	b.TriggerCardEvent(ctx.Target, ctx, EventDeathrattle)
 	p.Graveyard = append(p.Graveyard, ctx.Target)
-	b.TriggerEventsFrom(b.allActiveCards(), ctx, EventAfterDestroyMinion)
+	b.TriggerEventsFrom(b.AllActiveCards(), ctx, EventAfterDestroyMinion)
 	if ctx.Target.HasTag(Reborn) {
 		cpy := *ctx.Target
 		cpy.Health = cpy.MaxHealth
@@ -259,9 +312,9 @@ func (b *Board) UseHeroPower(hp, target *Card) error {
 	} else {
 		ctx = b.Context(hp, hp)
 	}
-	b.TriggerEventsFrom(b.allActiveCards(), ctx, EventBeforeHeroPower)
+	b.TriggerEventsFrom(b.AllActiveCards(), ctx, EventBeforeHeroPower)
 	b.TriggerCardEvent(hp, ctx, EventHeroPower)
-	b.TriggerEventsFrom(b.allActiveCards(), ctx, EventAfterHeroPower)
+	b.TriggerEventsFrom(b.AllActiveCards(), ctx, EventAfterHeroPower)
 	hp.AttacksLeft--
 	return nil
 }
@@ -281,15 +334,15 @@ func (b *Board) DrawCard(source *Card, p *Player, i byte) {
 	}
 	b.AddHistoric(Draw, source, card)
 	ctx := b.Context(card, card)
-	b.TriggerEventsFrom(b.allActiveCards(), ctx, EventBeforeDrawCard)
+	b.TriggerEventsFrom(b.AllActiveCards(), ctx, EventBeforeDrawCard)
 	b.AddToHand(p, ctx.Target)
-	b.TriggerEventsFrom(b.allActiveCards(), ctx, EventAfterDrawCard)
+	b.TriggerEventsFrom(b.AllActiveCards(), ctx, EventAfterDrawCard)
 }
 
 func (b *Board) AddToHand(p *Player, card *Card) {
-	b.TriggerEventsFrom(b.allActiveCards(), b.Context(card, card), EventBeforeAddToHand)
+	b.TriggerEventsFrom(b.AllActiveCards(), b.Context(card, card), EventBeforeAddToHand)
 	p.Hand = append(p.Hand, card)
-	b.TriggerEventsFrom(b.allActiveCards(), b.Context(card, card), EventAfterAddToHand)
+	b.TriggerEventsFrom(b.AllActiveCards(), b.Context(card, card), EventAfterAddToHand)
 }
 
 func (b *Board) DrawCardEventless(p *Player, i byte) *Card {
@@ -317,8 +370,9 @@ func (b *Board) TriggerCardEvent(card *Card, ctx *EventContext, eventName string
 				continue
 			}
 			f(ctx)
-			if card.HasTag(Secret) {
-				card.Player.Hero.DelEnchId(card.Id)
+			if e.HasTag(Secret) {
+				b.AddHistoric(Secret, card, card)
+				card.Player.Hero.DelEnchId(e.Id)
 				break
 			}
 		}
@@ -366,7 +420,6 @@ func (b *Board) EndTurn(p *Player) {
 	for _, c := range p.Minions {
 		b.TriggerCardEvent(c, b.Context(p.Hero, p.Hero), EventEndOfTurn)
 	}
-	p.Hero.AttacksLeft = 1
 	b.WakeUpMinions(p)
 	b.NextTurn()
 }
@@ -436,7 +489,7 @@ func (b *Board) PlayCard(source, card, target *Card, pos int) {
 		ctx = b.Context(card, card)
 	}
 	p := card.Player
-	b.TriggerEventsFrom(b.allActiveCards(), ctx, EventBeforeCardPlay)
+	b.TriggerEventsFrom(b.AllActiveCards(), ctx, EventBeforeCardPlay)
 	switch card.Tags[0] {
 	case Minion:
 		b.SummonMinion(source, card)
@@ -448,6 +501,7 @@ func (b *Board) PlayCard(source, card, target *Card, pos int) {
 				Id:     card.Id,
 				Name:   card.Name,
 				Text:   card.Text,
+				Tags:   []string{Secret},
 				Events: events,
 			}
 			card.Player.Hero.Enchantments = append(card.Player.Hero.Enchantments, ench)
@@ -455,10 +509,10 @@ func (b *Board) PlayCard(source, card, target *Card, pos int) {
 		b.TriggerCardEvent(card, ctx, EventSpellCast)
 		b.insertCard(0, p.Graveyard, card)
 	case Weapon:
-		card.Player.Weapon = card
-		// TODO: Hero
+		b.EquipWeapon(card)
+		// TODO: case Hero
 	}
-	b.TriggerEventsFrom(b.allActiveCards(), ctx, EventAfterCardPlay)
+	b.TriggerEventsFrom(b.AllActiveCards(), ctx, EventAfterCardPlay)
 }
 
 func (b *Board) SummonMinion(source, card *Card) {
@@ -467,10 +521,10 @@ func (b *Board) SummonMinion(source, card *Card) {
 		return
 	}
 	ctx := b.Context(card, card)
-	b.TriggerEventsFrom(b.allActiveCards(), ctx, EventBeforeSummon)
+	b.TriggerEventsFrom(b.AllActiveCards(), ctx, EventBeforeSummon)
 	p.Minions = append(p.Minions, card)
 	b.TriggerCardEvent(card, ctx, EventSummon)
-	b.TriggerEventsFrom(b.allActiveCards(), ctx, EventAfterSummon)
+	b.TriggerEventsFrom(b.AllActiveCards(), ctx, EventAfterSummon)
 	card.Sleeping = !(card.HasTag(Charge) || card.HasTag(Rush))
 	if !card.Sleeping {
 		b.RefreshAttack(card)
@@ -495,7 +549,32 @@ func (b *Board) AllMinionCards() []*Card {
 	return cards
 }
 
-func (b *Board) allActiveCards() []*Card {
+func (b *Board) EquipWeapon(weapon *Card) {
+	if weapon.Player.Weapon != nil {
+		b.DestroyWeapon(weapon.Player.Hero, weapon)
+	}
+	b.TriggerEventsFrom(b.AllActiveCards(), b.Context(weapon, weapon), EventBeforeWeaponEquip)
+	weapon.Player.Weapon = weapon
+	b.TriggerEventsFrom(b.AllActiveCards(), b.Context(weapon, weapon), EventAfterWeaponEquip)
+}
+
+func (b *Board) LoseDurability(source, target *Card, q int) {
+	b.TriggerEventsFrom(b.AllActiveCards(), b.Context(source, target), EventBeforeLoseDurability)
+	target.Health -= q
+	b.TriggerEventsFrom(b.AllActiveCards(), b.Context(source, target), EventAfterLoseDurability)
+	if target.Health <= 0 {
+		b.DestroyWeapon(source, target)
+	}
+}
+
+func (b *Board) DestroyWeapon(source, target *Card) {
+	b.TriggerEventsFrom(b.AllActiveCards(), b.Context(source, target), EventBeforeWeaponDestroy)
+	target.Player.Graveyard = append(target.Player.Graveyard, target.Player.Weapon)
+	target.Player.Weapon = nil
+	b.TriggerCardEvent(target, b.Context(source, target), EventAfterWeaponDestroy)
+}
+
+func (b *Board) AllActiveCards() []*Card {
 	var cards []*Card
 	for _, p := range b.Players {
 		cards = append(cards, p.Hero)
@@ -509,7 +588,7 @@ func (b *Board) allActiveCards() []*Card {
 	}
 	return cards
 }
-func (b *Board) characters() []*Card {
+func (b *Board) AllCharacters() []*Card {
 	var cards []*Card
 	for _, p := range b.Players {
 		cards = append(cards, p.Hero)
@@ -526,7 +605,7 @@ func (b *Board) getOpponent(p *Player) *Player {
 }
 
 func (b *Board) cardIsActiveCard(card *Card) bool {
-	for _, c := range b.allActiveCards() {
+	for _, c := range b.AllActiveCards() {
 		if c == card {
 			return true
 		}
