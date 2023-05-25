@@ -37,7 +37,7 @@ func (b *Board) Start() {
 			p.Hand = append(p.Hand, b.DrawCardEventless(p, 0))
 		}
 	}
-	coin := Coin()
+	coin := TheCoin()
 	coin.Id = uuid.NewString()
 	coin.Player = b.Players[1]
 	b.Players[1].Hand = append(b.Players[1].Hand, coin)
@@ -548,7 +548,7 @@ func (b *Board) SummonMinion(source, card *Card) {
 	}
 	card.Id = uuid.NewString()
 	card.Player = p
-	card.MaxHealth = card.Health
+	card.Health = card.MaxHealth
 	ctx := b.Context(source, card)
 	b.TriggerEventsFrom(b.AllActiveCards(), ctx, EventBeforeSummon)
 	p.Minions = append(p.Minions, card)
