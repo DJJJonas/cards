@@ -90,7 +90,7 @@ func TranslateEnchantment(e *cards.Enchantment) *Enchantment {
 		Mana:        e.ManaCost,
 		Name:        e.Name,
 		Attack:      e.Attack,
-		MaxHealth:   e.MaxHealth,
+		MaxHealth:   e.Health,
 		SpellDamage: e.SpellDamage,
 		Tags:        e.Tags,
 		Text:        e.GetFormattedText(),

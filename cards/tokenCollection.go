@@ -39,10 +39,10 @@ func SunkenScavenger() *Card {
 					if card.Tribe == Murloc && card.Id != ctx.Source.Id {
 						ctx.Target = card
 						ctx.Board.EnchantCard(card, &Enchantment{
-							Id:        uuid.NewString(),
-							Name:      "+1/+1",
-							Attack:    1,
-							MaxHealth: 1,
+							Id:     uuid.NewString(),
+							Name:   "+1/+1",
+							Attack: 1,
+							Health: 1,
 						})
 					}
 				}

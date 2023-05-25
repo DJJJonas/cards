@@ -3,6 +3,8 @@ package cards
 import (
 	"cards/utils"
 	"fmt"
+
+	"github.com/google/uuid"
 )
 
 type HistoricEvent struct {
@@ -27,7 +29,7 @@ type Board struct {
 func (b *Board) Start() {
 	b.PlayerTurn = 1 // So on next turn, it's player 1's turn
 	for _, p := range b.Players {
-		setCardPlayers(p)
+		setupCards(p)
 		b.ShuffleDeck(p)
 		b.TriggerEventsFrom(p.Deck, b.Context(p.Hero, p.Hero), EventStartOfGame)
 		// TODO: mulligan action mechanic
@@ -36,6 +38,7 @@ func (b *Board) Start() {
 		}
 	}
 	coin := Coin()
+	coin.Id = uuid.NewString()
 	coin.Player = b.Players[1]
 	b.Players[1].Hand = append(b.Players[1].Hand, coin)
 	b.NextTurn()
@@ -89,7 +92,7 @@ func (b *Board) DoAction(a *Action, p *Player) error {
 		target := b.getCardByIdFrom(a.TargetId, b.AllCharacters())
 		if card.Targets != nil {
 			validOptions := card.Targets(b)
-			if !b.targetIsValid(target.Id, validOptions) {
+			if target == nil || !b.targetIsValid(target.Id, validOptions) {
 				return fmt.Errorf("target not found")
 			}
 		}
@@ -130,7 +133,7 @@ func (b *Board) DoAction(a *Action, p *Player) error {
 	return nil
 }
 
-func setCardPlayers(p *Player) {
+func setupCards(p *Player) {
 	cards := p.Deck
 	cards = append(cards, p.Hero)
 	cards = append(cards, p.HeroPower)
@@ -139,6 +142,8 @@ func setCardPlayers(p *Player) {
 	for _, c := range cards {
 		if c != nil {
 			c.Player = p
+			c.Id = uuid.NewString()
+			c.MaxHealth = c.Health
 		}
 	}
 }
@@ -155,6 +160,9 @@ func (b *Board) OpponentHasTaunt(p *Player) bool {
 }
 
 func (b *Board) EnchantCard(card *Card, enchantment *Enchantment) {
+	if enchantment.Id == "" {
+		enchantment.Id = uuid.NewString()
+	}
 	card.AddEnchantment(enchantment)
 }
 
@@ -516,11 +524,14 @@ func (b *Board) PlayCard(source, card, target *Card, pos int) {
 }
 
 func (b *Board) SummonMinion(source, card *Card) {
-	p := card.Player
+	p := source.Player
 	if card.Tags[0] == Minion && len(p.Minions) >= p.MaxMinions {
 		return
 	}
-	ctx := b.Context(card, card)
+	card.Id = uuid.NewString()
+	card.Player = p
+	card.MaxHealth = card.Health
+	ctx := b.Context(source, card)
 	b.TriggerEventsFrom(b.AllActiveCards(), ctx, EventBeforeSummon)
 	p.Minions = append(p.Minions, card)
 	b.TriggerCardEvent(card, ctx, EventSummon)

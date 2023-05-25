@@ -47,11 +47,11 @@ func SummonMinionEvent(minion func() *Card) Event {
 func GivePlusXYToMinion(x, y int) Event {
 	return func(ctx *EventContext) error {
 		ctx.Board.EnchantCard(ctx.Target, &Enchantment{
-			Id:        uuid.NewString(),
-			Name:      "+1/+1",
-			Attack:    x,
-			MaxHealth: y,
-			Text:      "",
+			Id:     uuid.NewString(),
+			Name:   "+1/+1",
+			Attack: x,
+			Health: y,
+			Text:   "",
 		})
 		return nil
 	}

@@ -152,7 +152,12 @@
   }
 
   function targetIds(ids: string[]) {
-    [board.enemyHero, ...board.enemyMinions].forEach((c) => {
+    [
+      board.myHero,
+      ...board.myMinions,
+      board.enemyHero,
+      ...board.enemyMinions,
+    ].forEach((c) => {
       if (ids.some((id) => id === c.id)) c.targeted = true;
     });
     update();
@@ -175,7 +180,11 @@
     return card.targets !== null && card.targets.length > 0;
   }
 
-  function manaString(mana: number, maxMana: number, maxMaxMana: number): string {
+  function manaString(
+    mana: number,
+    maxMana: number,
+    maxMaxMana: number
+  ): string {
     let d = 0;
     let m = mana;
     let mm = maxMana - mana;
@@ -198,7 +207,11 @@
     {/if}
 
     <div class="my-hero">
-      <Hero card={board.myHero} width={width * 1} on:click={() => prepareAttack(board.myHero)} />
+      <Hero
+        card={board.myHero}
+        width={width * 1}
+        on:click={() => prepareAttack(board.myHero)}
+      />
     </div>
 
     <div class="enemy-hero">
@@ -220,14 +233,14 @@
     {/if}
 
     {#if board.enemyWeapon}
-    <div
-      class="enemy-weapon"
-      on:mouseenter={() => (fullCardView = board.enemyWeapon)}
-      on:mouseleave={() => (fullCardView = null)}
-    >
-      <Weapon card={board.enemyWeapon} width={width * 0.8} />
-    </div>
-  {/if}
+      <div
+        class="enemy-weapon"
+        on:mouseenter={() => (fullCardView = board.enemyWeapon)}
+        on:mouseleave={() => (fullCardView = null)}
+      >
+        <Weapon card={board.enemyWeapon} width={width * 0.8} />
+      </div>
+    {/if}
 
     <div
       class="my-heropower"

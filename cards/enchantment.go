@@ -10,7 +10,7 @@ type Enchantment struct {
 	ManaCost    int
 	Name        string
 	Attack      int
-	MaxHealth   int
+	Health      int
 	SpellDamage int
 	Text        string
 	Tags        []string

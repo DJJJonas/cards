@@ -74,7 +74,7 @@ type Card struct {
 }
 
 func (c *Card) AddEnchantment(e *Enchantment) {
-	c.Health += e.MaxHealth
+	c.Health += e.Health
 	c.Enchantments = append(c.Enchantments, e)
 }
 
@@ -98,7 +98,7 @@ func (c *Card) GetAttack() int {
 func (c *Card) GetMaxHealth() int {
 	maxHealth := c.MaxHealth
 	for _, e := range c.Enchantments {
-		maxHealth += e.MaxHealth
+		maxHealth += e.Health
 	}
 	return maxHealth
 }
