@@ -18,6 +18,8 @@ type Player struct {
 	DiscardPile []*Card
 	// Cards that have been burned
 	Crematorium     []*Card
+	MaxSecrets      int
+	Secrets         []*Card
 	MaxMaxMana      int
 	MaxMana         int
 	Mana            int

@@ -54,16 +54,18 @@ type Board struct {
 	MyMaxMana    int     `json:"myMaxMana"`
 	MyMaxMaxMana int     `json:"myMaxMaxMana"`
 	MyDeckSize   int     `json:"myDeckSize"`
+	MySecrets    []*Card `json:"mySecrets"`
 
-	EnemyHero       *Card   `json:"enemyHero"`
-	EnemyHeroPower  *Card   `json:"enemyHeroPower"`
-	EnemyWeapon     *Card   `json:"enemyWeapon"`
-	EnemyHandSize   int     `json:"enemyHandSize"`
-	EnemyMinions    []*Card `json:"enemyMinions"`
-	EnemyMana       int     `json:"enemyMana"`
-	EnemyMaxMana    int     `json:"enemyMaxMana"`
-	EnemyMaxMaxMana int     `json:"enemyMaxMaxMana"`
-	EnemyDeckSize   int     `json:"enemyDeckSize"`
+	EnemyHero        *Card   `json:"enemyHero"`
+	EnemyHeroPower   *Card   `json:"enemyHeroPower"`
+	EnemyWeapon      *Card   `json:"enemyWeapon"`
+	EnemyHandSize    int     `json:"enemyHandSize"`
+	EnemyMinions     []*Card `json:"enemyMinions"`
+	EnemyMana        int     `json:"enemyMana"`
+	EnemyMaxMana     int     `json:"enemyMaxMana"`
+	EnemyMaxMaxMana  int     `json:"enemyMaxMaxMana"`
+	EnemyDeckSize    int     `json:"enemyDeckSize"`
+	EnemySecretCount int     `json:"enemySecretCount"`
 }
 
 func TranslateEvents(b *cards.Board, es []*cards.HistoricEvent) []*Event {
@@ -75,6 +77,7 @@ func TranslateEvents(b *cards.Board, es []*cards.HistoricEvent) []*Event {
 }
 
 func TranslateEvent(b *cards.Board, e *cards.HistoricEvent) *Event {
+	// TODO: generate different events based on type and player (add player parameter)
 	return &Event{
 		Type:   e.Type,
 		Turn:   e.Turn,
@@ -157,15 +160,17 @@ func TranslateBoard(b *cards.Board, playerId byte) *Board {
 		MyMaxMana:    b.Players[playerId].MaxMana,
 		MyMaxMaxMana: b.Players[playerId].MaxMaxMana,
 		MyDeckSize:   len(b.Players[playerId].Deck),
+		MySecrets:    TranslateCards(b, b.Players[playerId].Secrets),
 
-		EnemyHero:       TranslateCard(b, b.Players[enemyId].Hero),
-		EnemyHeroPower:  TranslateCard(b, b.Players[enemyId].HeroPower),
-		EnemyWeapon:     TranslateCard(b, b.Players[enemyId].Weapon),
-		EnemyHandSize:   len(b.Players[enemyId].Hand),
-		EnemyMinions:    TranslateCards(b, b.Players[enemyId].Minions),
-		EnemyMana:       b.Players[enemyId].Mana,
-		EnemyMaxMana:    b.Players[enemyId].MaxMana,
-		EnemyMaxMaxMana: b.Players[enemyId].MaxMaxMana,
-		EnemyDeckSize:   len(b.Players[enemyId].Deck),
+		EnemyHero:        TranslateCard(b, b.Players[enemyId].Hero),
+		EnemyHeroPower:   TranslateCard(b, b.Players[enemyId].HeroPower),
+		EnemyWeapon:      TranslateCard(b, b.Players[enemyId].Weapon),
+		EnemyHandSize:    len(b.Players[enemyId].Hand),
+		EnemyMinions:     TranslateCards(b, b.Players[enemyId].Minions),
+		EnemyMana:        b.Players[enemyId].Mana,
+		EnemyMaxMana:     b.Players[enemyId].MaxMana,
+		EnemyMaxMaxMana:  b.Players[enemyId].MaxMaxMana,
+		EnemyDeckSize:    len(b.Players[enemyId].Deck),
+		EnemySecretCount: len(b.Players[enemyId].Secrets),
 	}
 }

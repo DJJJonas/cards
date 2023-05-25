@@ -260,6 +260,28 @@
       <Heropower card={board.enemyHeroPower} width={width * 0.65} />
     </div>
 
+    {#if board.mySecrets}
+      <div class="my-secrets">
+        {#each board.mySecrets as secret}
+          <div
+            class="secret"
+            on:mouseenter={() => (fullCardView = secret)}
+            on:mouseleave={() => (fullCardView = null)}
+          >
+            ?
+          </div>
+        {/each}
+      </div>
+    {/if}
+
+    {#if board.enemySecretCount > 0}
+      <div class="enemy-secrets">
+        {#each Array(board.enemySecretCount) as _}
+          <div class="secret">?</div>
+        {/each}
+      </div>
+    {/if}
+
     <div class="my-deck">
       {board.myDeckSize}
     </div>
@@ -326,6 +348,38 @@
 </main>
 
 <style>
+  .my-secrets {
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    width: 10%;
+    left: 50%;
+    bottom: 7%;
+    transform: translate(-50%, 50%);
+    font-size: 10pt;
+  }
+  .enemy-secrets {
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    width: 10%;
+    left: 50%;
+    top: 0.5%;
+    transform: translate(-50%);
+    font-size: 10pt;
+  }
+  .secret {
+    font-size: 18pt;
+    text-align: center;
+    background-color: yellow;
+    text-shadow: 1px 1px 2px black, -1px 1px 2px black, 1px -1px 2px black,
+      -1px -1px 2px black;
+    width: 16%;
+    aspect-ratio: 1;
+    border-style: solid;
+    border-color: #222222;
+    border-radius: 50%;
+  }
   .enemy-mana {
     position: absolute;
     top: 10%;

@@ -62,6 +62,7 @@ export interface Board {
   myMaxMana: number;
   myMaxMaxMana: number;
   myDeckSize: number;
+  mySecrets: Card[];
 
   enemyHero: Card;
   enemyHeroPower: Card;
@@ -72,6 +73,7 @@ export interface Board {
   enemyMaxMana: number;
   enemyMaxMaxMana: number;
   enemyDeckSize: number;
+  enemySecretCount: number;
 }
 
 export function queryCard(b: Board, id: string): Card | undefined {

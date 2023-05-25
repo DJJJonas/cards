@@ -387,8 +387,11 @@ func (b *Board) TriggerCardEvent(card *Card, ctx *EventContext, eventName string
 	}
 }
 
-func (b Board) TriggerEventsFrom(cards []*Card, ctx *EventContext, eventName string) {
+func (b *Board) TriggerEventsFrom(cards []*Card, ctx *EventContext, eventName string) {
 	for _, card := range cards {
+		if card.HasTag(Secret) && (b.Players[b.PlayerTurn] == card.Player) {
+			continue
+		}
 		b.TriggerCardEvent(card, ctx, eventName)
 	}
 }
@@ -456,7 +459,13 @@ func (b *Board) WakeUpMinions(p *Player) {
 
 func (b *Board) PlayFromHand(card, target *Card, pos int) error {
 	p := card.Player
-	// Mana payment
+	if card.HasTag(Secret) {
+		for _, s := range card.Player.Secrets {
+			if s.Name == card.Name {
+				return fmt.Errorf("secret already played")
+			}
+		}
+	}
 	if !b.PayFor(card) {
 		return fmt.Errorf("not enough mana")
 	}
@@ -496,6 +505,15 @@ func (b *Board) PlayCard(source, card, target *Card, pos int) {
 	} else {
 		ctx = b.Context(card, card)
 	}
+	isSecret := card.HasTag(Secret)
+	if isSecret {
+		for _, s := range card.Player.Secrets {
+			if s.Name == card.Name {
+				// repeated secret not allowed
+				return
+			}
+		}
+	}
 	p := card.Player
 	b.TriggerEventsFrom(b.AllActiveCards(), ctx, EventBeforeCardPlay)
 	switch card.Tags[0] {
@@ -503,16 +521,9 @@ func (b *Board) PlayCard(source, card, target *Card, pos int) {
 		b.SummonMinion(source, card)
 		b.TriggerCardEvent(card, ctx, EventBattlecry)
 	case Spell:
-		if card.HasTag(Secret) {
-			events := card.Events
-			ench := &Enchantment{
-				Id:     card.Id,
-				Name:   card.Name,
-				Text:   card.Text,
-				Tags:   []string{Secret},
-				Events: events,
-			}
-			card.Player.Hero.Enchantments = append(card.Player.Hero.Enchantments, ench)
+		if isSecret {
+			b.PlaySecret(source, card)
+			b.AddHistoric(Secret, source, card)
 		}
 		b.TriggerCardEvent(card, ctx, EventSpellCast)
 		b.insertCard(0, p.Graveyard, card)
@@ -521,6 +532,13 @@ func (b *Board) PlayCard(source, card, target *Card, pos int) {
 		// TODO: case Hero
 	}
 	b.TriggerEventsFrom(b.AllActiveCards(), ctx, EventAfterCardPlay)
+}
+
+func (b *Board) PlaySecret(source, secret *Card) {
+	if secret.Player == nil {
+		secret.Player = source.Player
+	}
+	secret.Player.Secrets = append(secret.Player.Secrets, secret)
 }
 
 func (b *Board) SummonMinion(source, card *Card) {
@@ -596,6 +614,7 @@ func (b *Board) AllActiveCards() []*Card {
 			cards = append(cards, p.HeroPower)
 		}
 		cards = append(cards, p.Minions...)
+		cards = append(cards, p.Secrets...)
 	}
 	return cards
 }
