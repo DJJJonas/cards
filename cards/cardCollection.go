@@ -48,14 +48,12 @@ func ElvenArcher() *Card {
 
 func RockBottom() *Card {
 	return &Card{
-		Mana:      1,
-		Name:      "Rock Bottom",
-		Attack:    0,
-		MaxHealth: 0,
-		Rarity:    Rare,
-		Text:      "Summon a 1/1 Murloc, then <b>Dredge</b>. If it's also a Murloc, summon one more.",
-		Image:     "https://static.wikia.nocookie.net/hearthstone_gamepedia/images/7/74/Rock_Bottom_full.jpg",
-		Tags:      []string{Spell, Warlock},
+		Mana:   1,
+		Name:   "Rock Bottom",
+		Rarity: Rare,
+		Text:   "Summon a 1/1 Murloc, then <b>Dredge</b>. If it's also a Murloc, summon one more.",
+		Image:  "https://static.wikia.nocookie.net/hearthstone_gamepedia/images/7/74/Rock_Bottom_full.jpg",
+		Tags:   []string{Spell, Warlock},
 		Events: map[string]Event{
 			EventSpellCast: func(ctx *EventContext) error {
 				p := ctx.Source.Player
