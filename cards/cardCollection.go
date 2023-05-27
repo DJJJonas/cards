@@ -362,7 +362,7 @@ func LushwaterScout() *Card {
 		Tags:      []string{Minion, Neutral},
 		Events: map[string]Event{
 			EventAfterSummon: func(ctx *EventContext) error {
-				card := ctx.Source
+				card := ctx.Target
 				if card.Player != ctx.This.Player || card == ctx.This || card.Tribe != Murloc {
 					return nil
 				}
