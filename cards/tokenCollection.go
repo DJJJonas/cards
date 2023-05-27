@@ -12,7 +12,7 @@ func RockBottomMurloc() *Card {
 		MaxHealth: 1,
 		Rarity:    Basic,
 		Tribe:     Murloc,
-		Image:     "https://www.fishkeepingworld.com/wp-content/uploads/2018/02/17-Most-Popular-Freshwater-Fish-Article-Banner.png",
+		Image:     "https://static.wikia.nocookie.net/hearthstone_gamepedia/images/6/6e/Coldlight_Lurker_full.jpg",
 		Tags:      []string{Minion, Neutral},
 	}
 }
@@ -28,7 +28,7 @@ func SunkenScavenger() *Card {
 		Text:      "<b>Battlecry:</b> Give your other Murlocs +1/+1 <i>(wherever they are)</i>.",
 		Rarity:    Basic,
 		Tribe:     Murloc,
-		Image:     "https://i.pinimg.com/originals/0a/97/8b/0a978bcf51182a0d441358ce56118532.jpg",
+		Image:     "https://static.wikia.nocookie.net/hearthstone_gamepedia/images/1/1b/Sunken_Scavenger_full.jpg",
 		Tags:      []string{Minion, Neutral},
 		Events: map[string]Event{
 			EventBattlecry: func(ctx *EventContext) error {
@@ -63,7 +63,7 @@ func GenerateGigafinMaw(gigafinId, enchId string) *Card {
 		Text:      "<b>Taunt. Deathrattle:</b> Permanently destroy all minions inside Gigafin.",
 		Rarity:    Legendary,
 		Tribe:     Murloc,
-		Image:     "http://4.bp.blogspot.com/-PBPdLSUjYNY/UbG0DP746sI/AAAAAAAAHcs/cXlMp1zgrG8/s1600/beautifuk+fish+wallpaper+10.jpg",
+		Image:     "https://static.wikia.nocookie.net/hearthstone_gamepedia/images/2/26/Gigafin_full.jpg",
 		Tags:      []string{Minion, Neutral, Taunt},
 		Events: map[string]Event{
 			EventDeathrattle: func(ctx *EventContext) error {
