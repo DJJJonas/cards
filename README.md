@@ -7,15 +7,7 @@
 ### Back-end
 
 ```bash
+$ yarn build
 $ go run main.go
 ```
-
-### Front-end
-
-You will need to open two instances of the front-end to play the game
-
-```bash
-$ cd frontend
-$ yarn
-$ yarn dev
-```
+Then access http://localhost:8123/
