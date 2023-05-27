@@ -143,7 +143,7 @@ func setupCards(p *Player) {
 		if c != nil {
 			c.Player = p
 			c.Id = uuid.NewString()
-			c.MaxHealth = c.Health
+			c.Health = c.MaxHealth
 		}
 	}
 }
@@ -422,6 +422,7 @@ func (b *Board) NextTurn() {
 		p.MaxMana++
 	}
 	b.RefreshManaCrystals(p)
+	b.WakeUpMinions(p)
 	b.RefreshAttacks(p)
 	b.DrawCard(p.Hero, p, 0)
 	b.StartTurn(p)
