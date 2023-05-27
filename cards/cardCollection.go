@@ -115,6 +115,7 @@ func ChumBucket() *Card {
 						ctx.Board.EnchantCard(c, &Enchantment{
 							Name:   "+1/+1",
 							Attack: 1,
+							Health: 1,
 						})
 					}
 				}
@@ -126,6 +127,7 @@ func ChumBucket() *Card {
 								ctx.Board.EnchantCard(c, &Enchantment{
 									Name:   "+1/+1",
 									Attack: 1,
+									Health: 1,
 								})
 							}
 						}
