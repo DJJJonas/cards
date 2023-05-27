@@ -1,10 +1,8 @@
 <script lang="ts">
   import { createEventDispatcher } from "svelte";
   import {
-    getTags,
-    type Card,
-    getMaxHealth,
-    getCardAttack,
+      getCardAttack,
+      getTags
   } from "../interfaces/cards";
 
   export let card: import("../interfaces/cards").Card;
@@ -87,8 +85,8 @@
   on:mouseenter={() => dispatch("mouseenter")}
   on:mouseleave={() => dispatch("mouseleave")}
 >
-  <div class="mana" style:font-size={width * 0.174 + "px"}>{card.mana}</div>
-  <img class="image {card.type === "weapon" ? "weapon" : "normal"}" src={card.image} alt="card portrait" />
+<img class={card.type} src={card.image} alt="card portrait" />
+<div class="mana" style:font-size={width * 0.174 + "px"}>{card.mana}</div>
   <div class="name" style:font-size={width * 0.092 + "px"}>{card.name}</div>
   <div class="text" style:font-size={width * 0.08 + "px"}>
     {@html card.text}
@@ -158,20 +156,49 @@
     translate: -50%;
     border-style: solid;
     border-color: #a49393;
-    border-width: 4px;
+    border-width: 2px;
     border-radius: 50%;
   }
 
-  .normal {
+  .minion {
+    position: absolute;
+    object-fit: cover;
+    left: 50%;
+    translate: -50%;
+    border-style: solid;
+    border-color: #a49393;
+    border-width: 2px;
+    border-radius: 50%;
     top: -6%;
-    width: 70%;
-    height: 62.2%;
+    width: 76%;
+    height: 65.2%;
   }
 
   .weapon {
+    position: absolute;
+    object-fit: cover;
+    left: 50%;
+    translate: -50%;
+    border-style: solid;
+    border-color: #a49393;
+    border-width: 2px;
+    border-radius: 50%;
     top: -2%;
     width: 84%;
     aspect-ratio: 1;
+  }
+  .spell {
+    position: absolute;
+    object-fit: cover;
+    left: 50%;
+    translate: -50%;
+    border-style: solid;
+    border-color: #a49393;
+    border-width: 2px;
+    border-radius: 10%;
+    top: 2%;
+    width: 90%;
+    height: 50%;
   }
   .name {
     position: absolute;
