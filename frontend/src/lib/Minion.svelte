@@ -1,6 +1,11 @@
 <script setup lang="ts">
   import { createEventDispatcher } from "svelte";
-  import { type Card, getCardAttack, getMaxHealth } from "../interfaces/cards";
+  import {
+      getCardAttack,
+      getMaxHealth,
+      getTags,
+      type Card,
+  } from "../interfaces/cards";
   export let card: Card;
   export let width: number;
   const dispatch = createEventDispatcher();
@@ -65,9 +70,26 @@
   {#if card.sleeping}
     <div class="sleeping" style:font-size={width * 0.7 + "px"}>💤</div>
   {/if}
+  {#if getTags(card).some((tag) => tag === "divineShield")}
+    <div class="divine-shield" />
+  {/if}
 </div>
 
 <style>
+  .divine-shield {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 110%;
+    height: 110%;
+    translate: -50% -50%;
+    aspect-ratio: 1/1.3;
+    background-color: #ffd90040;
+    border-style: solid;
+    border-color: #e3be00;
+    border-width: 1px;
+    border-radius: 50%;
+  }
   .CanAttack {
     cursor: pointer;
     border-color: green;
