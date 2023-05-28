@@ -584,7 +584,11 @@ func Consecration() *Card {
 			EventSpellCast: func(ctx *EventContext) error {
 				op := ctx.Board.getOpponent(ctx.This.Player)
 				ctx.Board.DealDamage(ctx.This, op.Hero, 2)
-				for _, c := range op.Minions {
+				// create a new array for opp minions
+				minions := append([]*Card{}, op.Minions...)
+				// because if loop through op.Minions, the slice
+				// will be updated as minions are destroyed
+				for _, c := range minions {
 					ctx.Board.DealDamage(ctx.This, c, 2)
 				}
 				return nil
