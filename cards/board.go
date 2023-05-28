@@ -549,7 +549,7 @@ func (b *Board) SummonMinion(source, card *Card) {
 	}
 	card.Id = uuid.NewString()
 	card.Player = p
-	card.Health = card.MaxHealth
+	card.Health = card.GetMaxHealth()
 	ctx := b.Context(source, card)
 	b.TriggerEventsFrom(b.AllActiveCards(), ctx, EventBeforeSummon)
 	p.Minions = append(p.Minions, card)
