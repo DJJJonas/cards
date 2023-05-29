@@ -368,6 +368,14 @@ func (b *Board) TriggerCardEvent(card *Card, ctx *EventContext, eventName string
 		f, ok := card.Events[eventName]
 		if ok {
 			f(ctx)
+			if card.HasTag(Secret) {
+				for i, s := range card.Player.Secrets {
+					if s == card {
+						card.Player.Secrets = append(card.Player.Secrets[:i], card.Player.Secrets[i+1:]...)
+						break
+					}
+				}
+			}
 		}
 	}
 	if card.Enchantments != nil && len(card.Enchantments) > 0 {
@@ -378,11 +386,6 @@ func (b *Board) TriggerCardEvent(card *Card, ctx *EventContext, eventName string
 				continue
 			}
 			f(ctx)
-			if e.HasTag(Secret) {
-				b.AddHistoric(Secret, card, card)
-				card.Player.Hero.DelEnchId(e.Id)
-				break
-			}
 		}
 	}
 }
