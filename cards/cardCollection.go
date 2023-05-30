@@ -901,6 +901,29 @@ func SludgeBelcher() *Card {
 	}
 }
 
+func EmperorThaurissan() *Card {
+	return &Card{
+		Mana:      6,
+		Name:      "Emperor Thaurissan",
+		Attack:    5,
+		MaxHealth: 5,
+		Rarity:    Legendary,
+		Text:      "At the end of your turn, reduce the Cost of cards in your hand by (1).",
+		Image:     "https://static.wikia.nocookie.net/hearthstone_gamepedia/images/5/5a/Emperor_Thaurissan_full.jpg",
+		Tags:      []string{Minion, Neutral, EndOfTurn},
+		Events: map[string]Event{
+			EventEndOfTurn: func(ctx *EventContext) error {
+				for _, c := range ctx.This.Player.Hand {
+					ctx.Board.EnchantCard(c, &Enchantment{
+						ManaCost: -1,
+					})
+				}
+				return nil
+			},
+		},
+	}
+}
+
 func NZothTheCorruptor() *Card {
 	return &Card{
 		Mana:      10,

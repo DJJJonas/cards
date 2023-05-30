@@ -2,6 +2,7 @@
   import { createEventDispatcher } from "svelte";
   import {
       getCardAttack,
+      getCost,
       getTags
   } from "../interfaces/cards";
 
@@ -86,7 +87,7 @@
   on:mouseleave={() => dispatch("mouseleave")}
 >
 <img class={card.type} src={card.image} alt="card portrait" />
-<div class="mana" style:font-size={width * 0.174 + "px"}>{card.mana}</div>
+<div class="mana" style:font-size={width * 0.174 + "px"}>{getCost(card)}</div>
   <div class="name" style:font-size={width * 0.092 + "px"}>{card.name}</div>
   <div class="text" style:font-size={width * 0.08 + "px"}>
     {@html card.text}

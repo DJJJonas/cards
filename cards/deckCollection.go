@@ -90,10 +90,9 @@ func PaladinControlZoth() *Player {
 			LootHoarder(),
 			LootHoarder(),
 			SpawnOfNZoth(),
-			SpawnOfNZoth(),  //remove
-			SludgeBelcher(), //remove
+			SpawnOfNZoth(), //remove
 			SludgeBelcher(),
-			// EmperorThaurissan(),
+			EmperorThaurissan(),
 			// SylvanasWindrunner(),
 			// RagnarosTheFirelord(),
 			NZothTheCorruptor(),

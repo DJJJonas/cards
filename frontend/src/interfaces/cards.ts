@@ -119,6 +119,9 @@ export function getCost(card: Card): number {
       enchcost += card.enchantments[i].mana;
     }
   }
+  if (card.mana+enchcost < 0) {
+    return 0;
+  }
   return card.mana + enchcost;
 }
 

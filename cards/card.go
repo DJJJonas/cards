@@ -50,6 +50,7 @@ const (
 	DivineShield = "divineShield"
 	Secret       = "secret"
 	Spellpower   = "spellpower"
+	EndOfTurn    = "endOfTurn"
 )
 
 type Card struct {
@@ -141,6 +142,9 @@ func (c *Card) GetManaCost() int {
 	cost := c.Mana
 	for _, e := range c.Enchantments {
 		cost += e.ManaCost
+	}
+	if cost < 0 {
+		return 0
 	}
 	return cost
 }
