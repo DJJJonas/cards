@@ -1,6 +1,8 @@
 package cards
 
 import (
+	"cards/utils"
+
 	"github.com/google/uuid"
 )
 
@@ -918,6 +920,35 @@ func EmperorThaurissan() *Card {
 						ManaCost: -1,
 					})
 				}
+				return nil
+			},
+		},
+	}
+}
+
+func SylvanasWindrunner() *Card {
+	return &Card{
+		Mana:      6,
+		Name:      "Sylvanas Windrunner",
+		Attack:    5,
+		MaxHealth: 5,
+		Rarity:    Legendary,
+		Text:      "<b>Deathrattle:</b> Take control of a random enemy minion.",
+		Image:     "https://static.wikia.nocookie.net/hearthstone_gamepedia/images/f/f9/Sylvanas_Windrunner_full.jpg",
+		Tags:      []string{Minion, Neutral, Deathrattle},
+		Events: map[string]Event{
+			EventDeathrattle: func(ctx *EventContext) error {
+				myMinionCount := len(ctx.This.Player.Minions)
+				if myMinionCount == 0 || myMinionCount == ctx.This.Player.MaxMinions {
+					return nil
+				}
+				opp := ctx.Board.getOpponent(ctx.This.Player)
+				minions := opp.Minions
+				mcount := len(minions)
+				utils.RandInt(0, mcount)
+				m := minions[mcount-1]
+				opp.Minions = append(opp.Minions[:mcount-1], opp.Minions[mcount:]...)
+				ctx.This.Player.Minions = append(ctx.This.Player.Minions, m)
 				return nil
 			},
 		},
