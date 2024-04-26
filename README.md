@@ -1,6 +1,9 @@
 # Cards
-## _This project is abandoned_
-## [Click here to see a gameplay video on YouTube](https://youtu.be/P893iLVth2E?t=2481)
+```diff
+- This project will no longer receive updates -
+```
+
+[Click here to see a gameplay video on YouTube](https://youtu.be/P893iLVth2E?t=2481)
 
 ![Sample screenshot](./imgs/sample.png)
 
